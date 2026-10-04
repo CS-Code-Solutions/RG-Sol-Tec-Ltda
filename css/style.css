@@ -221,3 +221,83 @@ canvas {
         margin: 0 !important;
     }
 }
+
+/* ==========================================================================
+   ESTILOS ADICIONADOS: MODAL DE CONFIGURAÇÕES, STATUS DO BANCO E BACKUP
+   ========================================================================== */
+
+/* Card e Badge de Status do Banco de Dados */
+.status-banco-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f8f9fa;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    font-weight: bold;
+    margin: 15px 0;
+}
+
+.badge-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+.badge-status.online {
+    background: #e6f4ea;
+    color: #137333;
+}
+
+.badge-status.offline {
+    background: #fce8e6;
+    color: #c5221f;
+}
+
+.ponto-status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.badge-status.online .ponto-status {
+    background-color: #1e8e3e;
+    box-shadow: 0 0 6px #1e8e3e;
+}
+
+.badge-status.offline .ponto-status {
+    background-color: #d93025;
+    box-shadow: 0 0 6px #d93025;
+}
+
+/* Botões de Ação para Backup */
+.backup-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+}
+
+.btn-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.btn-warning:hover {
+    background-color: #e0a800 !important;
+}
+
+.btn-success {
+    background-color: #28a745 !important;
+    color: white !important;
+}
+
+.btn-success:hover {
+    background-color: #218838 !important;
+}
