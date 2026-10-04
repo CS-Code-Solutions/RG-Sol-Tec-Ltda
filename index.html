@@ -24,7 +24,7 @@
                 <a href="nova-os.html">📋 Nova RAT</a>
                 <a href="horas-extras.html">⏱️ Horas Extras</a>
                 
-                <!-- NOVO: Botão de Configurações adicionado ao Menu -->
+                <!-- Botão de Configurações no Menu -->
                 <a href="#" id="btnAbrirConfig" style="background: #2c3e50; text-align: center; margin-top: 15px;">⚙️ Configurações</a>
 
                 <a href="#" id="btn-logout" style="margin-top: 15px; background: #dc3545; text-align: center;">🚪 Terminar Sessão</a>
@@ -175,7 +175,7 @@
         </div>
     </div>
 
-    <!-- NOVO MODAL: CONFIGURAÇÕES, BACKUP E DADOS DA EMPRESA -->
+    <!-- MODAL: CONFIGURAÇÕES, BACKUP E DADOS DA EMPRESA -->
     <div id="modalConfiguracoes" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; overflow-y: auto;">
         <div style="background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 550px; max-height: 85vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
             <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px;">
@@ -286,15 +286,25 @@
         const btnAbrir = document.getElementById('btnAbrirConfig');
         const btnFechar = document.getElementById('btnFecharConfig');
 
-        btnAbrir?.addEventListener('click', (e) => {
-            e.preventDefault();
+        function abrirModalConfiguracoes() {
             carregarDadosEmpresaLocal();
             modalConfig.style.display = 'flex';
+        }
+
+        btnAbrir?.addEventListener('click', (e) => {
+            e.preventDefault();
+            abrirModalConfiguracoes();
         });
 
         btnFechar?.addEventListener('click', () => {
             modalConfig.style.display = 'none';
         });
+
+        // Ouve se veio de outra página através do parâmetro ?config=true
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('config') === 'true') {
+            abrirModalConfiguracoes();
+        }
 
         // --- Monitor do Banco (Online / Offline) ---
         function atualizarStatusConexao() {
@@ -422,7 +432,7 @@
         });
     </script>
 
-    <!-- Script com Cache Busting (v=3.9) -->
+    <!-- Script Principal da Aplicação (v=3.9) -->
     <script type="module">
         import { db, auth } from './js/firebase-config.js?v=3.9';
         import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
