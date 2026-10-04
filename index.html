@@ -23,7 +23,11 @@
                 <a href="clientes.html">👥 Gestão de Clientes</a>
                 <a href="nova-os.html">📋 Nova RAT</a>
                 <a href="horas-extras.html">⏱️ Horas Extras</a>
-                <a href="#" id="btn-logout" style="margin-top: 30px; background: #dc3545; text-align: center;">🚪 Terminar Sessão</a>
+                
+                <!-- NOVO: Botão de Configurações adicionado ao Menu -->
+                <a href="#" id="btnAbrirConfig" style="background: #2c3e50; text-align: center; margin-top: 15px;">⚙️ Configurações</a>
+
+                <a href="#" id="btn-logout" style="margin-top: 15px; background: #dc3545; text-align: center;">🚪 Terminar Sessão</a>
                 
                 <div style="margin-top: 20px; text-align: center; font-size: 11px; color: #adb5bd; font-weight: 500;">
                     Powered by CS Code Solutions
@@ -171,6 +175,74 @@
         </div>
     </div>
 
+    <!-- NOVO MODAL: CONFIGURAÇÕES, BACKUP E DADOS DA EMPRESA -->
+    <div id="modalConfiguracoes" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; overflow-y: auto;">
+        <div style="background: white; padding: 20px; border-radius: 8px; width: 90%; max-width: 550px; max-height: 85vh; overflow-y: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #eee; padding-bottom: 10px;">
+                <h3 style="margin: 0; color: #2c3e50; font-size: 18px;">⚙️ Configurações & Administração</h3>
+                <button id="btnFecharConfig" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+            </div>
+
+            <!-- STATUS DO BANCO DE DADOS EM TEMPO REAL -->
+            <div style="display: flex; justify-content: space-between; align-items: center; background: #f8f9fa; padding: 12px; border-radius: 6px; margin: 15px 0; border: 1px solid #e9ecef;">
+                <span style="font-weight: bold; font-size: 13px;">Status do Banco de Dados:</span>
+                <span id="statusBancoBadge" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; background: #e6f4ea; color: #137333;">
+                    <span id="pontoStatus" style="width: 8px; height: 8px; border-radius: 50%; background-color: #1e8e3e; display: inline-block;"></span>
+                    <span id="statusBancoTexto">Conectado (Online)</span>
+                </span>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+
+            <!-- DADOS DA EMPRESA E BANCÁRIOS -->
+            <div style="margin-bottom: 15px;">
+                <h4 style="margin: 0 0 10px 0; color: #2c3e50; font-size: 15px;">🏢 Dados da Empresa & PIX</h4>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div>
+                        <label style="font-size: 12px; font-weight: bold;">Razão Social / Nome:</label>
+                        <input type="text" id="cfgNomeEmpresa" placeholder="RG Soluções Técnicas" style="width: 100%; padding: 6px; font-size: 13px; box-sizing: border-box; margin-top: 2px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; font-weight: bold;">CNPJ:</label>
+                        <input type="text" id="cfgCnpj" placeholder="00.000.000/0001-00" style="width: 100%; padding: 6px; font-size: 13px; box-sizing: border-box; margin-top: 2px;">
+                    </div>
+                    <div>
+                        <label style="font-size: 12px; font-weight: bold;">Chave PIX:</label>
+                        <input type="text" id="cfgChavePix" placeholder="CNPJ, E-mail ou Telefone" style="width: 100%; padding: 6px; font-size: 13px; box-sizing: border-box; margin-top: 2px;">
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 12px; font-weight: bold;">Banco:</label>
+                            <input type="text" id="cfgBanco" placeholder="Ex: Itaú" style="width: 100%; padding: 6px; font-size: 13px; box-sizing: border-box; margin-top: 2px;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 12px; font-weight: bold;">Agência:</label>
+                            <input type="text" id="cfgAgencia" placeholder="0000" style="width: 100%; padding: 6px; font-size: 13px; box-sizing: border-box; margin-top: 2px;">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 12px; font-weight: bold;">Conta:</label>
+                            <input type="text" id="cfgConta" placeholder="00000-0" style="width: 100%; padding: 6px; font-size: 13px; box-sizing: border-box; margin-top: 2px;">
+                        </div>
+                    </div>
+                    <button type="button" id="btnSalvarEmpresa" style="margin-top: 5px; padding: 7px 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">Salvar Dados da Empresa</button>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+
+            <!-- GESTÃO DE BACKUP -->
+            <div>
+                <h4 style="margin: 0 0 5px 0; color: #2c3e50; font-size: 15px;">💾 Cópia de Segurança (Backup)</h4>
+                <p style="font-size: 11px; color: #666; margin-bottom: 10px;">Baixe uma cópia dos registros ou restaure arquivos no banco de dados.</p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button id="btnExportarBackup" style="flex: 1; min-width: 140px; padding: 8px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">📥 Baixar Backup (JSON)</button>
+                    <input type="file" id="inputFileBackup" accept=".json" style="display: none;">
+                    <button id="btnImportarBackup" style="flex: 1; min-width: 140px; padding: 8px; background: #ffc107; color: #212529; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">📤 Restaurar Backup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Registo e Atualização Automática do Service Worker para PWA -->
     <script>
         if ('serviceWorker' in navigator) {
@@ -202,6 +274,152 @@
                 }
             });
         }
+    </script>
+
+    <!-- SCRIPT DE LÓGICA DO MODAL DE CONFIGURAÇÕES & BACKUP -->
+    <script type="module">
+        import { db } from './js/firebase-config.js?v=3.9';
+        import { collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // --- Abertura e Fecho do Modal ---
+        const modalConfig = document.getElementById('modalConfiguracoes');
+        const btnAbrir = document.getElementById('btnAbrirConfig');
+        const btnFechar = document.getElementById('btnFecharConfig');
+
+        btnAbrir?.addEventListener('click', (e) => {
+            e.preventDefault();
+            carregarDadosEmpresaLocal();
+            modalConfig.style.display = 'flex';
+        });
+
+        btnFechar?.addEventListener('click', () => {
+            modalConfig.style.display = 'none';
+        });
+
+        // --- Monitor do Banco (Online / Offline) ---
+        function atualizarStatusConexao() {
+            const badge = document.getElementById('statusBancoBadge');
+            const texto = document.getElementById('statusBancoTexto');
+            const ponto = document.getElementById('pontoStatus');
+
+            if (!badge || !texto || !ponto) return;
+
+            if (navigator.onLine) {
+                badge.style.background = '#e6f4ea';
+                badge.style.color = '#137333';
+                ponto.style.backgroundColor = '#1e8e3e';
+                texto.textContent = 'Conectado (Online)';
+            } else {
+                badge.style.background = '#fce8e6';
+                badge.style.color = '#c5221f';
+                ponto.style.backgroundColor = '#d93025';
+                texto.textContent = 'Modo Offline (Salvação Local)';
+            }
+        }
+        window.addEventListener('online', atualizarStatusConexao);
+        window.addEventListener('offline', atualizarStatusConexao);
+        atualizarStatusConexao();
+
+        // --- Salvar e Carregar Dados da Empresa ---
+        function carregarDadosEmpresaLocal() {
+            const empresa = JSON.parse(localStorage.getItem('rg_dados_empresa') || '{}');
+            document.getElementById('cfgNomeEmpresa').value = empresa.nome || '';
+            document.getElementById('cfgCnpj').value = empresa.cnpj || '';
+            document.getElementById('cfgChavePix').value = empresa.chavePix || '';
+            document.getElementById('cfgBanco').value = empresa.banco || '';
+            document.getElementById('cfgAgencia').value = empresa.agencia || '';
+            document.getElementById('cfgConta').value = empresa.conta || '';
+        }
+
+        document.getElementById('btnSalvarEmpresa')?.addEventListener('click', () => {
+            const dados = {
+                nome: document.getElementById('cfgNomeEmpresa').value,
+                cnpj: document.getElementById('cfgCnpj').value,
+                chavePix: document.getElementById('cfgChavePix').value,
+                banco: document.getElementById('cfgBanco').value,
+                agencia: document.getElementById('cfgAgencia').value,
+                conta: document.getElementById('cfgConta').value
+            };
+            localStorage.setItem('rg_dados_empresa', JSON.stringify(dados));
+            alert('Dados da empresa salvos com sucesso!');
+        });
+
+        // --- Exportar Backup JSON ---
+        document.getElementById('btnExportarBackup')?.addEventListener('click', async () => {
+            try {
+                const clientsSnap = await getDocs(collection(db, "clients"));
+                const clients = [];
+                clientsSnap.forEach(d => clients.push({ id: d.id, ...d.data() }));
+
+                const ordersSnap = await getDocs(collection(db, "service_orders"));
+                const orders = [];
+                ordersSnap.forEach(d => orders.push({ id: d.id, ...d.data() }));
+
+                const backupData = {
+                    dataExportacao: new Date().toISOString(),
+                    clients: clients,
+                    service_orders: orders
+                };
+
+                const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: "application/json" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = `backup_rg_solucoes_${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                alert("Backup exportado com sucesso!");
+            } catch (err) {
+                console.error("Erro ao exportar backup:", err);
+                alert("Erro ao exportar backup.");
+            }
+        });
+
+        // --- Restaurar Backup JSON ---
+        const btnImportar = document.getElementById('btnImportarBackup');
+        const inputBackup = document.getElementById('inputFileBackup');
+
+        btnImportar?.addEventListener('click', () => inputBackup.click());
+
+        inputBackup?.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            if (!confirm("Deseja restaurar este arquivo de backup no banco de dados?")) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const conteudo = JSON.parse(e.target.result);
+
+                    if (conteudo.clients && Array.isArray(conteudo.clients)) {
+                        for (const client of conteudo.clients) {
+                            const cId = client.id;
+                            const data = { ...client };
+                            delete data.id;
+                            await setDoc(doc(db, "clients", cId), data, { merge: true });
+                        }
+                    }
+
+                    if (conteudo.service_orders && Array.isArray(conteudo.service_orders)) {
+                        for (const order of conteudo.service_orders) {
+                            const oId = order.id;
+                            const data = { ...order };
+                            delete data.id;
+                            await setDoc(doc(db, "service_orders", oId), data, { merge: true });
+                        }
+                    }
+
+                    alert("Backup restaurado com sucesso!");
+                    window.location.reload();
+                } catch (err) {
+                    console.error("Erro ao restaurar backup:", err);
+                    alert("Formato de arquivo inválido para restauração.");
+                }
+            };
+            reader.readAsText(file);
+        });
     </script>
 
     <!-- Script com Cache Busting (v=3.9) -->
@@ -389,565 +607,6 @@
                 console.error("Erro ao carregar clientes para o filtro:", error);
             }
         }
-
-        async function loadHistory() {
-            const historyListDiv = document.getElementById('history-list');
-            try {
-                const q = query(collection(db, "service_orders"), orderBy("createdAt", "desc"));
-                const querySnapshot = await getDocs(q);
-                
-                allOrders = [];
-                querySnapshot.forEach((docSnap) => {
-                    allOrders.push({ id: docSnap.id, ...docSnap.data() });
-                });
-
-                renderHistory(allOrders);
-            } catch (error) {
-                console.error("Erro ao carregar histórico:", error);
-                historyListDiv.innerHTML = "<p style='color: red;'>Erro ao carregar os dados do histórico.</p>";
-            }
-        }
-
-        function calcularNumeroOS(order) {
-            if (order.osNumber) {
-                return String(order.osNumber).padStart(5, '0');
-            }
-            if (!allOrders || allOrders.length === 0) {
-                return "00013";
-            }
-            const ordersAsc = [...allOrders].reverse();
-            const index = ordersAsc.findIndex(o => o.id === order.id);
-            const num = (index !== -1) ? (13 + index) : (13 + allOrders.length);
-            return String(num).padStart(5, '0');
-        }
-
-        function renderHistory(orders) {
-            const historyListDiv = document.getElementById('history-list');
-            historyListDiv.innerHTML = "";
-
-            if (orders.length === 0) {
-                historyListDiv.innerHTML = "<p style='color: #666; text-align: center; padding: 20px;'>Nenhuma RAT encontrada com os filtros selecionados.</p>";
-                return;
-            }
-
-            let html = "";
-            orders.forEach(order => {
-                const clientInfo = clientsMap[order.clientId] || {};
-                const clientName = clientInfo.name || order.clientName || "Cliente Desconhecido";
-                const numOSFormatted = calcularNumeroOS(order);
-                
-                const inicioManhaFmt = order.timeStartManha || order.timeStart ? formatarDataHora(order.timeStartManha || order.timeStart) : null;
-                const fimManhaFmt = order.timeEndManha ? formatarDataHora(order.timeEndManha) : null;
-                const inicioTardeFmt = order.timeStartTarde ? formatarDataHora(order.timeStartTarde) : null;
-                const fimTardeFmt = order.timeEndTarde ? formatarDataHora(order.timeEndTarde) : null;
-                
-                let turnosTextoHtml = '';
-                if (inicioManhaFmt && fimManhaFmt) {
-                    turnosTextoHtml += `<p style="margin: 4px 0; font-size: 13px; color: #555;"><strong>Manhã:</strong> ${inicioManhaFmt} até ${fimManhaFmt}</p>`;
-                }
-                if (inicioTardeFmt && fimTardeFmt) {
-                    turnosTextoHtml += `<p style="margin: 4px 0; font-size: 13px; color: #555;"><strong>Tarde:</strong> ${inicioTardeFmt} até ${fimTardeFmt}</p>`;
-                }
-                if (!turnosTextoHtml) {
-                    turnosTextoHtml = `<p style="margin: 4px 0; font-size: 13px; color: #d9534f; font-weight: bold;"><strong>Turnos:</strong> Pendente / Não preenchidos</p>`;
-                }
-
-                const temEncerramento = Boolean(order.timeEnd || order.timeEndTarde || order.timeEndManha);
-                const btnEncerramentoTexto = temEncerramento ? 'Editar Turnos/Encerramento' : 'Preencher Encerramento';
-                
-                const temFotos = (order.attachments && order.attachments.length > 0) || (order.imageUrls && order.imageUrls.length > 0) || order.imageUrl;
-                const badgeAnexo = temFotos ? `<span style="background: #17a2b8; color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; white-space: nowrap; display: inline-block; margin-top: 2px;">📷 Com Anexo(s)</span>` : '';
-
-                html += `
-                    <div style="background: #ffffff; border: 1px solid #e0e0e0; border-left: 5px solid #007bff; padding: 15px; border-radius: 6px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 8px;">
-                            <div style="flex: 1;">
-                                <span style="background: #007bff; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-right: 6px; display: inline-block;">RAT N° ${numOSFormatted}</span>
-                                <strong style="font-size: 16px; color: #2c3e50; word-break: break-word;">${clientName}</strong>
-                                ${badgeAnexo}
-                            </div>
-                            <span style="background: #e9ecef; padding: 3px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: #495057; white-space: nowrap;">${order.serviceNature || 'Corretiva'}</span>
-                        </div>
-                        
-                        <p style="margin: 6px 0; font-size: 14px; color: #555;"><strong>Equipamento:</strong> ${order.equipment || 'N/A'} (Marca: ${order.brand || '-'}, Modelo: ${order.model || '-'})</p>
-                        ${turnosTextoHtml}
-                        <p style="margin: 4px 0; font-size: 13px; color: #444;">
-                            <strong>Total Horas:</strong> ${order.totalHoursText || order.totalHours || '0'}h | <strong>Pagamento:</strong> Para ${order.paymentTerms || '-'} dias
-                        </p>
-                        <p style="margin: 4px 0; font-size: 14px;">
-                            <strong>Valor Total:</strong> <span style="color: #28a745; font-weight: bold;">R$ ${order.totalValue || '0.00'}</span>
-                        </p>
-
-                        <p style="margin: 8px 0 12px 0; font-size: 13px; color: #666; background: #f8f9fa; padding: 8px; border-radius: 4px;"><em>"${order.description || 'Sem descrição'}"</em></p>
-
-                        <div style="margin-top: 12px; display: flex; flex-direction: column; gap: 8px;">
-                            <button onclick="gerarEPartilharPDF('${order.id}')" style="background: #28a745; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: bold; width: 100%;">
-                                📄 Gerar Relatório
-                            </button>
-                            <button onclick="abrirModalHoraFim('${order.id}')" style="background: #ffc107; color: #333; border: none; padding: 10px; cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: bold; width: 100%;">
-                                ⏱️ ${btnEncerramentoTexto}
-                            </button>
-                            <div style="display: flex; gap: 8px; width: 100%;">
-                                <button onclick="abrirModalEditar('${order.id}')" style="background: #17a2b8; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: bold; flex: 1;">
-                                    ✏️ Editar
-                                </button>
-                                <button onclick="excluirOS('${order.id}')" style="background: #dc3545; color: white; border: none; padding: 10px; cursor: pointer; border-radius: 4px; font-size: 13px; font-weight: bold; flex: 1;">
-                                    🗑 Excluir
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            });
-            historyListDiv.innerHTML = html;
-        }
-
-        window.abrirModalHoraFim = function(osId) {
-            activeOsIdForHoraFim = osId;
-            const order = allOrders.find(item => item.id === osId);
-            if (!order) return;
-
-            document.getElementById('modal-start-manha').value = order.timeStartManha || order.timeStart || '';
-            document.getElementById('modal-end-manha').value = order.timeEndManha || '';
-            document.getElementById('modal-start-tarde').value = order.timeStartTarde || '';
-            document.getElementById('modal-end-tarde').value = order.timeEndTarde || '';
-
-            document.getElementById('modal-hora-fim').style.display = 'flex';
-        };
-
-        document.getElementById('btn-cancelar-modal').addEventListener('click', () => {
-            document.getElementById('modal-hora-fim').style.display = 'none';
-            activeOsIdForHoraFim = null;
-        });
-
-        document.getElementById('btn-salvar-modal').addEventListener('click', async () => {
-            const startM = document.getElementById('modal-start-manha').value;
-            const endM = document.getElementById('modal-end-manha').value;
-            const startT = document.getElementById('modal-start-tarde').value;
-            const endT = document.getElementById('modal-end-tarde').value;
-
-            const order = allOrders.find(item => item.id === activeOsIdForHoraFim);
-            const valorHoraRef = order && order.valorHora ? parseFloat(order.valorHora) : 200.00;
-
-            const calc = calcularMinutosTrabalhados(startM, endM, startT, endT, valorHoraRef);
-
-            const valorHorasTotal = order && order.temHora === 'nao' ? 0 : parseFloat(calc.valorHorasTotal);
-            const valorKmTotal = order && order.valorKmTotal ? parseFloat(order.valorKmTotal) : 0;
-            const valorCombustivelTotal = order && order.valorCombustivelTotal ? parseFloat(order.valorCombustivelTotal) : 0;
-            const valorDespesasTotal = order && order.valorDespesasTotal ? parseFloat(order.valorDespesasTotal) : 0;
-            
-            const novoTotalGeral = (valorHorasTotal + valorKmTotal + valorCombustivelTotal + valorDespesasTotal).toFixed(2);
-            const timeEndOficial = endT ? endT : (endM ? endM : '');
-
-            try {
-                const docRef = doc(db, "service_orders", activeOsIdForHoraFim);
-                await updateDoc(docRef, {
-                    timeStartManha: startM,
-                    timeEndManha: endM,
-                    timeStartTarde: startT,
-                    timeEndTarde: endT,
-                    timeEnd: timeEndOficial,
-                    totalHours: calc.totalHours,
-                    totalHoursText: calc.totalHoursText,
-                    valorHorasTotal: valorHorasTotal.toFixed(2),
-                    totalValue: novoTotalGeral
-                });
-
-                document.getElementById('modal-hora-fim').style.display = 'none';
-                alert("Turnos e encerramento atualizados com sucesso!");
-                loadHistory();
-            } catch (error) {
-                console.error("Erro ao atualizar turnos:", error);
-                alert("Ocorreu um erro ao atualizar os dados.");
-            }
-        });
-
-        window.abrirModalEditar = function(osId) {
-            activeOsIdForEdit = osId;
-            const order = allOrders.find(item => item.id === osId);
-            if (!order) return;
-
-            document.getElementById('edit-equipment').value = order.equipment || '';
-            document.getElementById('edit-brand').value = order.brand || '';
-            document.getElementById('edit-model').value = order.model || '';
-            document.getElementById('edit-serial').value = order.serialNumber || '';
-            document.getElementById('edit-nature').value = order.serviceNature || 'Corretiva';
-            document.getElementById('edit-payment').value = order.paymentTerms || '';
-            document.getElementById('edit-description').value = order.description || '';
-
-            document.getElementById('modal-editar-os').style.display = 'flex';
-        };
-
-        document.getElementById('btn-cancelar-edit').addEventListener('click', () => {
-            document.getElementById('modal-editar-os').style.display = 'none';
-            activeOsIdForEdit = null;
-        });
-
-        document.getElementById('btn-salvar-edit').addEventListener('click', async () => {
-            const osId = activeOsIdForEdit;
-            if (!osId) return;
-
-            const updatedData = {
-                equipment: document.getElementById('edit-equipment').value,
-                brand: document.getElementById('edit-brand').value,
-                model: document.getElementById('edit-model').value,
-                serialNumber: document.getElementById('edit-serial').value,
-                serviceNature: document.getElementById('edit-nature').value,
-                paymentTerms: document.getElementById('edit-payment').value,
-                description: document.getElementById('edit-description').value
-            };
-
-            try {
-                const docRef = doc(db, "service_orders", osId);
-                await updateDoc(docRef, updatedData);
-
-                document.getElementById('modal-editar-os').style.display = 'none';
-                alert("RAT atualizada com sucesso!");
-                loadHistory();
-            } catch (error) {
-                console.error("Erro ao atualizar RAT:", error);
-                alert("Ocorreu um erro ao atualizar a RAT.");
-            }
-        });
-
-        window.excluirOS = async function(osId) {
-            if (confirm("Tem a certeza de que pretende eliminar esta RAT do histórico?")) {
-                try {
-                    await deleteDoc(doc(db, "service_orders", osId));
-                    alert("RAT eliminada com sucesso!");
-                    loadHistory();
-                } catch (error) {
-                    console.error("Erro ao eliminar RAT:", error);
-                    alert("Ocorreu um erro ao eliminar a RAT.");
-                }
-            }
-        };
-
-        window.gerarEPartilharPDF = async function(osId) {
-            try {
-                const order = allOrders.find(item => item.id === osId);
-                if (!order) {
-                    alert("RAT não encontrada!");
-                    return;
-                }
-
-                const clientInfo = clientsMap[order.clientId] || {};
-                const { jsPDF } = window.jspdf;
-                const docPDF = new jsPDF();
-
-                const empresa = {
-                    nome: "RG Soluções Técnicas",
-                    razaoSocial: "RG SOLUCOES TECNICAS LTDA",
-                    email: "gcrodeghiero@gmail.com",
-                    cnpj: "54.875.741/0001-45",
-                    banco: "748 - Sicredi",
-                    agencia: "0663",
-                    conta: "59490-8",
-                    cidade: "Porto Alegre"
-                };
-
-                const dataEmissao = new Date().toLocaleDateString('pt-BR');
-                const numOSFormatted = calcularNumeroOS(order) || "00013";
-
-                const logoResult = await getBase64ImageFromUrl('img/logo.png');
-                if (logoResult) {
-                    docPDF.addImage(logoResult.dataUrl, 'PNG', 20, 6, 26, 11);
-                }
-
-                docPDF.setFont("helvetica", "bold");
-                docPDF.setFontSize(10.5);
-                docPDF.text("Relatório de Assistência Técnica (RAT)", 49, 10);
-                
-                docPDF.setFontSize(9.5);
-                docPDF.setTextColor(0, 123, 255);
-                docPDF.text(`RAT N°: ${numOSFormatted}`, 150, 10);
-
-                docPDF.setTextColor(0, 0, 0);
-                docPDF.setFontSize(7.5);
-                docPDF.setFont("helvetica", "normal");
-                docPDF.text(`Em: ${dataEmissao}`, 150, 14.5);
-
-                docPDF.setLineWidth(0.3);
-                docPDF.line(20, 18, 190, 18);
-
-                let y = 18;
-
-                function desenharCabecalho(titulo, isFirst = false) {
-                    if (!isFirst) {
-                        y += 12;
-                    } else {
-                        y += 3;
-                    }
-
-                    docPDF.setFillColor(230, 235, 245);
-                    docPDF.rect(20, y, 170, 5, 'F');
-                    docPDF.setFont("helvetica", "bold");
-                    docPDF.setFontSize(8.5);
-                    docPDF.setTextColor(40, 40, 40);
-                    docPDF.text(titulo, 22, y + 3.5);
-                    
-                    y += 9;
-                }
-
-                desenharCabecalho("Empresa responsável", true);
-                docPDF.setFont("helvetica", "normal");
-                docPDF.setFontSize(8);
-                docPDF.text(`Nome: ${empresa.nome}`, 22, y);
-                docPDF.text(`Razão social: ${empresa.razaoSocial}`, 102, y);
-                y += 5;
-                docPDF.text(`E-mail de contato: ${empresa.email}`, 22, y);
-                docPDF.text(`CNPJ: ${empresa.cnpj}`, 102, y);
-
-                desenharCabecalho("Cliente");
-                docPDF.setFont("helvetica", "normal");
-                docPDF.setFontSize(8);
-                docPDF.text(`Nome: ${clientInfo.name || order.clientName || 'N/A'}`, 22, y);
-                docPDF.text(`Razão social: ${clientInfo.razaoSocial || '-'}`, 102, y);
-                y += 5;
-                docPDF.text(`E-mail: ${clientInfo.email || '-'}`, 22, y);
-                docPDF.text(`CPF / CNPJ: ${clientInfo.document || '-'}`, 102, y);
-                y += 5;
-                docPDF.text(`Endereço: ${clientInfo.address || '-'}`, 22, y);
-
-                desenharCabecalho("Equipamento");
-                docPDF.setFont("helvetica", "normal");
-                docPDF.setFontSize(8);
-                docPDF.text(`Equipamento: ${order.equipment || 'N/A'}`, 22, y);
-                docPDF.text(`Marca: ${order.brand || '-'} | Modelo: ${order.model || '-'}`, 102, y);
-                y += 5;
-                docPDF.text(`Matrícula / N° de Série: ${order.serialNumber || '-'}`, 22, y);
-
-                desenharCabecalho("Serviços realizados");
-                docPDF.setFont("helvetica", "bold");
-                docPDF.setFontSize(8);
-                docPDF.text("Tipo:", 22, y);
-                docPDF.setFont("helvetica", "normal");
-                docPDF.text(`${order.serviceNature || ''} - ${order.serviceArea || ''}`, 30, y);
-                y += 5;
-                docPDF.setFont("helvetica", "bold");
-                docPDF.text("Descrição:", 22, y);
-                y += 4;
-                docPDF.setFont("helvetica", "normal");
-                const splitDescription = docPDF.splitTextToSize(order.description || 'Sem descrição', 165);
-                docPDF.text(splitDescription, 22, y);
-                y += (splitDescription.length * 3.5);
-
-                desenharCabecalho("Horários e Turnos");
-                docPDF.setFont("helvetica", "normal");
-                docPDF.setFontSize(8);
-                
-                let temTurnoPDF = false;
-                if (order.timeStartManha && order.timeEndManha) {
-                    docPDF.text(`• Manhã: ${formatarDataHora(order.timeStartManha)} até ${formatarDataHora(order.timeEndManha)}`, 22, y);
-                    y += 5;
-                    temTurnoPDF = true;
-                }
-                if (order.timeStartTarde && order.timeEndTarde) {
-                    docPDF.text(`• Tarde: ${formatarDataHora(order.timeStartTarde)} até ${formatarDataHora(order.timeEndTarde)}`, 22, y);
-                    y += 5;
-                    temTurnoPDF = true;
-                }
-                if (!temTurnoPDF) {
-                    docPDF.text(`• Horários não especificados`, 22, y);
-                    y += 5;
-                }
-
-                desenharCabecalho("VALOR TOTAL");
-                docPDF.setFont("helvetica", "normal");
-                docPDF.setFontSize(8);
-
-                if (order.temHora === 'sim') {
-                    docPDF.text(`• Total Horas Trabalhadas: ${order.totalHoursText || '0h'} (R$ ${order.valorHorasTotal || '0.00'})`, 22, y);
-                    y += 5;
-                }
-                if (order.temKm === 'sim') {
-                    docPDF.text(`• Deslocamento: ${order.totalKm || 0} Km (Ida: ${order.kmIda || 0} + Volta: ${order.kmVolta || 0}) - R$ ${order.valorKmTotal || '0.00'}`, 22, y);
-                    y += 5;
-                }
-                if (order.temCombustivel === 'sim') {
-                    docPDF.text(`• Combustível: ${order.combustivelLitros || 0} Litros - R$ ${order.valorCombustivelTotal || '0.00'}`, 22, y);
-                    y += 5;
-                }
-                if (order.temDespesas === 'sim') {
-                    if (parseFloat(order.valorPedagio) > 0) {
-                        docPDF.text(`• Pedágios: R$ ${parseFloat(order.valorPedagio).toFixed(2)}`, 22, y);
-                        y += 5;
-                    }
-                    if (parseFloat(order.valorAlimentacao) > 0) {
-                        docPDF.text(`• Alimentação: R$ ${parseFloat(order.valorAlimentacao).toFixed(2)}`, 22, y);
-                        y += 5;
-                    }
-                    if (parseFloat(order.valorHospedagem) > 0) {
-                        docPDF.text(`• Hospedagem: R$ ${parseFloat(order.valorHospedagem).toFixed(2)}`, 22, y);
-                        y += 5;
-                    }
-                }
-
-                docPDF.setFont("helvetica", "bold");
-                docPDF.text(`• TOTAL GERAL: R$ ${order.totalValue || '0.00'}`, 22, y);
-
-                y += 5;
-                docPDF.setFont("helvetica", "normal");
-                docPDF.text(`• Condição de Pagamento: Pagamento para ${order.paymentTerms || '30'} dias`, 22, y);
-
-                desenharCabecalho("Dados Bancários / Pagamento PIX");
-                docPDF.setFont("helvetica", "normal");
-                docPDF.setFontSize(8);
-                docPDF.text(`• Banco: ${empresa.banco} | Agência: ${empresa.agencia} | Conta: ${empresa.conta}`, 22, y);
-                y += 5;
-                docPDF.text(`• Chave PIX (CNPJ): ${empresa.cnpj} | Favorecido: ${empresa.razaoSocial}`, 22, y);
-
-                const pixPayload = gerarPayloadPix(empresa.cnpj, empresa.razaoSocial, empresa.cidade, order.totalValue || 0, `RAT${numOSFormatted}`);
-                const qrCodeApiUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(pixPayload)}`;
-                
-                const qrResult = await getBase64ImageFromUrl(qrCodeApiUrl);
-                if (qrResult) {
-                    docPDF.addImage(qrResult.dataUrl, 'PNG', 156, (y - 9) + 8, 15, 15);
-                    docPDF.setFontSize(6);
-                    docPDF.text("Escaneie para pagar", 154, (y + 8) + 8);
-                }
-
-                y += 8; 
-
-                let sigY = y + 20; 
-                docPDF.setLineWidth(0.2);
-                docPDF.line(20, sigY + 10, 90, sigY + 10);
-                docPDF.line(120, sigY + 10, 190, sigY + 10);
-
-                docPDF.setFontSize(7);
-                docPDF.text("ASSINATURA DO CLIENTE", 38, sigY + 13.5);
-                docPDF.text("ASSINATURA TÉCNICO RESPONSÁVEL", 128, sigY + 13.5);
-
-                if (order.technicianSignature) {
-                    docPDF.addImage(order.technicianSignature, 'PNG', 125, sigY - 4, 45, 12);
-                }
-
-                if (order.customerSignature) {
-                    docPDF.addImage(order.customerSignature, 'PNG', 25, sigY - 4, 45, 12);
-                }
-
-                const listaAnexos = order.attachments || (order.imageUrls ? order.imageUrls.map((url, idx) => ({ title: `Anexo ${idx + 1}`, url })) : []);
-                
-                if (listaAnexos.length > 0) {
-                    docPDF.addPage();
-                    let anexoY = 20;
-
-                    docPDF.setFillColor(230, 235, 245);
-                    docPDF.rect(20, anexoY, 170, 6, 'F');
-                    docPDF.setFont("helvetica", "bold");
-                    docPDF.setFontSize(9.5);
-                    docPDF.setTextColor(40, 40, 40);
-                    docPDF.text("Anexo(s):", 22, anexoY + 4);
-                    
-                    anexoY += 12;
-
-                    for (let i = 0; i < listaAnexos.length; i++) {
-                        const anexo = listaAnexos[i];
-                        const imgResult = await getBase64ImageFromUrl(anexo.url);
-                        
-                        if (imgResult) {
-                            const maxWidth = 140;
-                            const maxHeight = 110;
-                            let imgWidth = maxWidth;
-                            let imgHeight = (imgResult.height * maxWidth) / imgResult.width;
-
-                            if (imgHeight > maxHeight) {
-                                imgHeight = maxHeight;
-                                imgWidth = (imgResult.width * maxHeight) / imgResult.height;
-                            }
-
-                            const startX = 20 + (170 - imgWidth) / 2;
-
-                            if (anexoY + imgHeight + 15 > 270) {
-                                docPDF.addPage();
-                                anexoY = 20;
-                            }
-
-                            docPDF.setFont("helvetica", "bold");
-                            docPDF.setFontSize(9);
-                            docPDF.text(`• ${anexo.title || `Anexo ${i + 1}`}`, 20, anexoY);
-                            anexoY += 5;
-
-                            docPDF.addImage(imgResult.dataUrl, 'JPEG', startX, anexoY, imgWidth, imgHeight);
-                            anexoY += imgHeight + 12;
-                        }
-                    }
-                }
-
-                const pdfBlob = docPDF.output('blob');
-                
-                const rawClientName = clientInfo.name || order.clientName || "Cliente";
-                const safeClientName = rawClientName.replace(/[^a-zA-Z0-9]/g, "_");
-                const refDateStr = order.timeStartManha || order.timeStart || new Date();
-                const dPdf = new Date(refDateStr);
-                const anoPdf = dPdf.getFullYear();
-                const mesPdf = String(dPdf.getMonth() + 1).padStart(2, '0');
-                const diaPdf = String(dPdf.getDate()).padStart(2, '0');
-                
-                const fileName = `RAT_${numOSFormatted}_${safeClientName}_${anoPdf}-${mesPdf}-${diaPdf}.pdf`;
-                const pdfFile = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
-                if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
-                    try {
-                        await navigator.share({
-                            title: `Relatório Técnico RAT ${numOSFormatted} - RG Soluções`,
-                            text: `Segue o relatório técnico referente ao equipamento ${order.equipment}.`,
-                            files: [pdfFile],
-                        });
-                        return;
-                    } catch (error) {
-                        if (error.name === 'AbortError') return;
-                    }
-                }
-
-                const pdfUrl = URL.createObjectURL(pdfBlob);
-                const downloadLink = document.createElement('a');
-                downloadLink.href = pdfUrl;
-                downloadLink.download = fileName;
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-                alert(`Relatório PDF da RAT N° ${numOSFormatted} gerado com sucesso!`);
-
-            } catch (error) {
-                console.error("Erro ao gerar o relatório PDF:", error);
-                alert("Ocorreu um erro ao processar o relatório.");
-            }
-        };
-
-        document.getElementById('apply-filters').addEventListener('click', () => {
-            const selectedClient = document.getElementById('filter-client').value;
-            const selectedType = document.getElementById('filter-type').value;
-            const startDate = document.getElementById('filter-start').value;
-            const endDate = document.getElementById('filter-end').value;
-
-            const filtered = allOrders.filter(order => {
-                if (selectedClient && order.clientId !== selectedClient) {
-                    return false;
-                }
-                if (selectedType && order.serviceNature !== selectedType) {
-                    return false;
-                }
-                const refDate = order.timeStartManha || order.timeStart;
-                if (refDate) {
-                    const orderDateStr = refDate.split('T')[0];
-                    if (startDate && orderDateStr < startDate) {
-                        return false;
-                    }
-                    if (endDate && orderDateStr > endDate) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-
-            renderHistory(filtered);
-        });
-
-        window.addEventListener('DOMContentLoaded', async () => {
-            await loadClientsFilter();
-            await loadHistory();
-        });
     </script>
 </body>
 </html>
