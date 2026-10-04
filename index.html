@@ -240,6 +240,11 @@
                     <button id="btnImportarBackup" style="flex: 1; min-width: 140px; padding: 8px; background: #ffc107; color: #212529; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;">📤 Restaurar Backup</button>
                 </div>
             </div>
+
+            <!-- BOTÃO FECHAR ADICIONADO NA PARTE INFERIOR DO MODAL -->
+            <div style="margin-top: 20px; text-align: right; border-top: 1px solid #eee; padding-top: 12px;">
+                <button type="button" id="btnFecharConfigAbaixo" style="padding: 7px 16px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold;">Fechar</button>
+            </div>
         </div>
     </div>
 
@@ -285,10 +290,15 @@
         const modalConfig = document.getElementById('modalConfiguracoes');
         const btnAbrir = document.getElementById('btnAbrirConfig');
         const btnFechar = document.getElementById('btnFecharConfig');
+        const btnFecharAbaixo = document.getElementById('btnFecharConfigAbaixo');
 
         function abrirModalConfiguracoes() {
             carregarDadosEmpresaLocal();
             modalConfig.style.display = 'flex';
+        }
+
+        function fecharModalConfiguracoes() {
+            modalConfig.style.display = 'none';
         }
 
         btnAbrir?.addEventListener('click', (e) => {
@@ -296,9 +306,8 @@
             abrirModalConfiguracoes();
         });
 
-        btnFechar?.addEventListener('click', () => {
-            modalConfig.style.display = 'none';
-        });
+        btnFechar?.addEventListener('click', fecharModalConfiguracoes);
+        btnFecharAbaixo?.addEventListener('click', fecharModalConfiguracoes);
 
         // Ouve se veio de outra página através do parâmetro ?config=true
         const urlParams = new URLSearchParams(window.location.search);
@@ -432,7 +441,7 @@
         });
     </script>
 
-    <!-- Script Principal da Aplicação (v=3.9) -->
+    <!-- Script Principal do Histórico de RATs (v=3.9) -->
     <script type="module">
         import { db, auth } from './js/firebase-config.js?v=3.9';
         import { collection, getDocs, doc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -444,6 +453,8 @@
             authChecked = true;
             if (!user) {
                 window.location.href = 'login.html';
+            } else {
+                inicializarPainel();
             }
         });
 
@@ -478,8 +489,6 @@
 
         let allOrders = [];
         let clientsMap = {};
-        let activeOsIdForHoraFim = null;
-        let activeOsIdForEdit = null;
 
         function formatarDataHora(dateStr) {
             if (!dateStr) return 'N/A';
@@ -491,114 +500,6 @@
             const hora = String(d.getHours()).padStart(2, '0');
             const min = String(d.getMinutes()).padStart(2, '0');
             return `${dia}/${mes}/${ano} às ${hora}:${min}`;
-        }
-
-        function calcularMinutosTrabalhados(startM, endM, startT, endT, valorHoraFixo = 200.00) {
-            let minutosTotais = 0;
-
-            if (startM && endM) {
-                const diffM = new Date(endM) - new Date(startM);
-                if (diffM > 0) minutosTotais += diffM / (1000 * 60);
-            }
-
-            if (startT && endT) {
-                const diffT = new Date(endT) - new Date(startT);
-                if (diffT > 0) minutosTotais += diffT / (1000 * 60);
-            }
-
-            if (minutosTotais < 0) minutosTotais = 0;
-
-            const horasDecimais = minutosTotais / 60;
-            const valorHorasTotal = horasDecimais * Number(valorHoraFixo);
-
-            const horasExatas = Math.floor(minutosTotais / 60);
-            const minutosRestantes = Math.round(minutosTotais % 60);
-            const formatadoTexto = `${horasExatas}h ${minutosRestantes}m`;
-
-            return {
-                totalHours: horasDecimais.toFixed(2),
-                totalHoursText: formatadoTexto,
-                valorHorasTotal: valorHorasTotal.toFixed(2)
-            };
-        }
-
-        function gerarPayloadPix(chave, nome, cidade, valor, txid = "***") {
-            const chaveLimpa = chave.replace(/\D/g, '');
-
-            const format = (id, val) => {
-                const len = String(val.length).padStart(2, '0');
-                return `${id}${len}${val}`;
-            };
-
-            const normalize = (str) => {
-                return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-            };
-
-            nome = normalize(nome).substring(0, 25);
-            cidade = normalize(cidade).substring(0, 15);
-
-            let gui = format("00", "br.gov.bcb.pix");
-            let key = format("01", chaveLimpa);
-            let merchantAccountInformation = format("26", gui + key);
-            
-            let mcc = format("52", "0000");
-            let currency = format("53", "986");
-            let amountStr = format("54", Number(valor).toFixed(2));
-            let country = format("58", "BR");
-            let merchantName = format("59", nome);
-            let merchantCity = format("60", cidade);
-            let additionalDataField = format("62", format("05", txid));
-            
-            let payloadWithoutCrc = merchantAccountInformation + mcc + currency + amountStr + country + merchantName + merchantCity + additionalDataField;
-            let payload = format("00", "01") + payloadWithoutCrc + "6304";
-            
-            let crc = 0xFFFF;
-            for (let i = 0; i < payload.length; i++) {
-                crc ^= payload.charCodeAt(i) << 8;
-                for (let j = 0; j < 8; j++) {
-                    if ((crc & 0x8000) !== 0) {
-                        crc = ((crc << 1) ^ 0x1021);
-                    } else {
-                        crc = (crc << 1);
-                    }
-                    crc &= 0xFFFF;
-                }
-            }
-            let crcHex = crc.toString(16).toUpperCase().padStart(4, '0');
-            return payload + crcHex;
-        }
-
-        function getBase64ImageFromUrl(url) {
-            return new Promise((resolve) => {
-                if (!url) {
-                    resolve(null);
-                    return;
-                }
-                const img = new Image();
-                img.crossOrigin = 'Anonymous';
-                img.onload = function() {
-                    try {
-                        const canvas = document.createElement('canvas');
-                        canvas.width = img.width;
-                        canvas.height = img.height;
-                        const ctx = canvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0);
-                        resolve({
-                            dataUrl: canvas.toDataURL('image/jpeg'),
-                            width: img.width,
-                            height: img.height
-                        });
-                    } catch (e) {
-                        console.warn("Erro ao converter imagem para Base64:", e);
-                        resolve(null);
-                    }
-                };
-                img.onerror = function() {
-                    console.warn("Não foi possível carregar a imagem:", url);
-                    resolve(null);
-                };
-                img.src = url;
-            });
         }
 
         async function loadClientsFilter() {
@@ -617,6 +518,88 @@
                 console.error("Erro ao carregar clientes para o filtro:", error);
             }
         }
+
+        async function loadHistory() {
+            const historyList = document.getElementById('history-list');
+            try {
+                const q = query(collection(db, "service_orders"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                allOrders = [];
+                querySnapshot.forEach((docSnap) => {
+                    allOrders.push({ id: docSnap.id, ...docSnap.data() });
+                });
+
+                renderOrders(allOrders);
+            } catch (error) {
+                console.error("Erro ao carregar histórico:", error);
+                historyList.innerHTML = '<p style="color: red; text-align: center;">Erro ao carregar RATs.</p>';
+            }
+        }
+
+        function renderOrders(orders) {
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+
+            if (orders.length === 0) {
+                historyList.innerHTML = '<p style="color: #666; text-align: center;">Nenhuma RAT encontrada.</p>';
+                return;
+            }
+
+            orders.forEach(os => {
+                const clientName = clientsMap[os.clientId]?.name || clientsMap[os.clientId]?.razaoSocial || os.clientName || 'Cliente não identificado';
+                
+                const card = document.createElement('div');
+                card.style.cssText = 'background: white; border: 1px solid #ddd; border-radius: 6px; padding: 15px; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);';
+                
+                card.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 8px;">
+                        <div>
+                            <strong style="font-size: 16px; color: #2c3e50;">${clientName}</strong>
+                            <div style="font-size: 12px; color: #666; margin-top: 2px;">
+                                <span><strong>Equipamento:</strong> ${os.equipment || 'N/A'}</span> | 
+                                <span><strong>Tipo:</strong> ${os.nature || 'Corretiva'}</span>
+                            </div>
+                        </div>
+                        <span style="font-size: 11px; background: #e9ecef; padding: 3px 8px; border-radius: 4px; font-weight: bold; color: #495057;">
+                            ${formatarDataHora(os.createdAt)}
+                        </span>
+                    </div>
+                    <div style="font-size: 13px; color: #444; margin-bottom: 10px;">
+                        <strong>Descrição:</strong> ${os.description || 'Sem descrição.'}
+                    </div>
+                `;
+
+                historyList.appendChild(card);
+            });
+        }
+
+        async function inicializarPainel() {
+            await loadClientsFilter();
+            await loadHistory();
+        }
+
+        document.getElementById('apply-filters')?.addEventListener('click', () => {
+            const clientVal = document.getElementById('filter-client').value;
+            const typeVal = document.getElementById('filter-type').value;
+            const startVal = document.getElementById('filter-start').value;
+            const endVal = document.getElementById('filter-end').value;
+
+            let filtered = allOrders.filter(os => {
+                if (clientVal && os.clientId !== clientVal) return false;
+                if (typeVal && os.nature !== typeVal) return false;
+
+                if (startVal || endVal) {
+                    const osDate = new Date(os.createdAt).getTime();
+                    if (startVal && osDate < new Date(startVal).getTime()) return false;
+                    if (endVal && osDate > new Date(endVal + 'T23:59:59').getTime()) return false;
+                }
+
+                return true;
+            });
+
+            renderOrders(filtered);
+        });
     </script>
 </body>
 </html>
