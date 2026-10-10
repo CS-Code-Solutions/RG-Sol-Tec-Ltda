@@ -17,10 +17,10 @@
             align-items: center;
             min-height: 100vh;
             box-sizing: border-box;
-            /* Imagem de Fundo com Fallback e Escurecimento */
+            background-color: #0a1423; /* Fundo base escuro fixo */
+            /* Apenas a sua imagem local img/image.png */
             background: linear-gradient(rgba(10, 20, 35, 0.75), rgba(10, 20, 35, 0.75)), 
-                        url('image.png') no-repeat center center fixed,
-                        url('https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
+                        url('img/image.png') no-repeat center center fixed;
             background-size: cover;
         }
 
@@ -37,7 +37,7 @@
             text-align: center;
             box-sizing: border-box;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-            display: none; /* Oculto até verificar a sessão */
+            display: none; /* Oculto até checar se o utilizador já está logado */
         }
         .login-card:hover {
             transform: translateY(-2px);
@@ -142,7 +142,7 @@
         const errorMsg = document.getElementById('error-msg');
         const btnGoogle = document.getElementById('btn-google-login');
 
-        // Redireciona direto se já estiver autenticado sem piscar a tela
+        // Redireciona direto se já estiver autenticado sem exibir a tela
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 window.location.href = 'index.html';
