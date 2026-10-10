@@ -17,27 +17,27 @@
             align-items: center;
             min-height: 100vh;
             box-sizing: border-box;
-            /* Imagem de Fundo com Escurecimento para Destaque */
+            /* Imagem de Fundo com Fallback e Escurecimento */
             background: linear-gradient(rgba(10, 20, 35, 0.75), rgba(10, 20, 35, 0.75)), 
-                        url('img/image.png') no-repeat center center fixed;
+                        url('image.png') no-repeat center center fixed,
+                        url('https://images.unsplash.com/photo-1581092160607-ee22621dd758?q=80&w=1920&auto=format&fit=crop') no-repeat center center fixed;
             background-size: cover;
         }
 
-        /* Cartão de Login Escuro e Translúcido */
+        /* Cartão de Login Translúcido */
         .login-card {
             background: rgba(18, 26, 38, 0.92);
             backdrop-filter: blur(8px);
-            padding: 35px 30px;
+            padding: 40px 30px;
             border-radius: 16px;
             border: 1px solid rgba(0, 195, 255, 0.4);
             box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 123, 255, 0.2);
             width: 100%;
-            max-width: 380px;
+            max-width: 360px;
             text-align: center;
             box-sizing: border-box;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-            /* Oculto por padrão até validar o estado da sessão */
-            display: none; 
+            display: none; /* Oculto até verificar a sessão */
         }
         .login-card:hover {
             transform: translateY(-2px);
@@ -46,106 +46,47 @@
         .login-card img {
             max-width: 160px;
             height: auto;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             filter: drop-shadow(0px 2px 6px rgba(0,0,0,0.5));
         }
         h2 { 
             color: #ffffff; 
-            margin-bottom: 22px; 
+            margin-bottom: 25px; 
             font-size: 22px;
             font-weight: 600;
         }
-        .form-group { 
-            margin-bottom: 16px; 
-            text-align: left; 
-        }
-        label { 
-            display: block; 
-            margin-bottom: 6px; 
-            color: #d1d5db; 
-            font-size: 13px;
-            font-weight: bold;
-        }
-        input { 
-            width: 100%; 
-            padding: 11px; 
-            border: 1px solid #374151; 
-            background-color: #1f2937;
-            color: #ffffff;
-            border-radius: 6px; 
-            box-sizing: border-box; 
-            outline: none;
-            font-size: 14px;
-            transition: border-color 0.2s, box-shadow 0.2s;
-        }
-        input::placeholder {
-            color: #9ca3af;
-        }
-        input:focus {
-            border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
-        }
-        button[type="submit"] { 
-            width: 100%; 
-            background: linear-gradient(135deg, #007bff, #0056b3); 
-            color: white; 
-            border: none; 
-            padding: 11px; 
-            border-radius: 6px; 
-            font-size: 15px; 
-            font-weight: bold;
-            cursor: pointer; 
-            transition: opacity 0.2s;
-            margin-top: 5px;
-        }
-        button[type="submit"]:hover { 
-            opacity: 0.9;
-        }
+
         #error-msg { 
             color: #ff6b6b; 
-            margin-top: 12px; 
+            margin-top: 15px; 
             font-size: 13px; 
             line-height: 1.4;
         }
 
-        /* Divisor */
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 20px 0;
-            color: #9ca3af;
-            font-size: 12px;
-        }
-        .divider::before, .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #374151;
-        }
-        .divider span {
-            padding: 0 10px;
-        }
-
-        /* Botão Google */
+        /* Botão Google Exclusivo */
         .btn-google {
             background: #ffffff;
             color: #374151;
             border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
+            border-radius: 8px;
+            font-size: 15px;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 12px;
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             cursor: pointer;
-            transition: background 0.2s, border-color 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: background 0.2s, transform 0.1s;
         }
         .btn-google:hover {
             background: #f3f4f6;
-            border-color: #9ca3af;
+            transform: scale(1.02);
+        }
+        .btn-google:active {
+            transform: scale(0.98);
         }
     </style>
 </head>
@@ -155,25 +96,10 @@
         <img src="img/logo.png" alt="RG Soluções Técnicas">
         
         <h2>Iniciar Sessão</h2>
-        <form id="login-form">
-            <div class="form-group">
-                <label>E-mail:</label>
-                <input type="email" id="email" required placeholder="exemplo@email.com">
-            </div>
-            <div class="form-group">
-                <label>Palavra-passe:</label>
-                <input type="password" id="password" required placeholder="********">
-            </div>
-            <button type="submit" id="btn-login">Entrar</button>
-        </form>
 
-        <!-- Login Alternativo com Google -->
-        <div class="divider">
-            <span>OU</span>
-        </div>
-
+        <!-- Login Exclusivo via Google -->
         <button type="button" id="btn-google-login" class="btn-google">
-            <svg width="18" height="18" viewBox="0 0 18 18">
+            <svg width="20" height="20" viewBox="0 0 18 18">
                 <path fill="#4285F4" d="M17.64 9.2c0-.74-.06-1.28-.19-1.84H9v3.34h4.96c-.1.83-.64 2.08-1.84 2.92l2.84 2.2c1.7-1.57 2.68-3.88 2.68-6.62z"/>
                 <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.84-2.2c-.76.53-1.78.9-3.12.9-2.38 0-4.41-1.57-5.13-3.72L.97 13.01C2.45 15.96 5.48 18 9 18z"/>
                 <path fill="#FBBC05" d="M3.87 10.8c-.18-.53-.28-1.1-.28-1.8s.1-1.27.28-1.8L.97 4.99C.35 6.22 0 7.57 0 9s.35 2.78.97 4.01l2.9-2.21z"/>
@@ -185,7 +111,7 @@
         <div id="error-msg"></div>
 
         <!-- Assinatura -->
-        <div style="margin-top: 25px; font-size: 11px; color: #9ca3af; font-weight: 500;">
+        <div style="margin-top: 30px; font-size: 11px; color: #9ca3af; font-weight: 500;">
             Powered by CS Code Solutions
         </div>
     </div>
@@ -201,11 +127,10 @@
         }
     </script>
 
-    <!-- Script de Autenticação com Validação de Acesso -->
+    <!-- Script de Autenticação Exclusiva com Google -->
     <script type="module">
         import { auth, db } from './js/firebase-config.js?v=3.9';
         import { 
-            signInWithEmailAndPassword, 
             GoogleAuthProvider, 
             signInWithPopup, 
             signOut,
@@ -214,12 +139,10 @@
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const loginCard = document.getElementById('loginCard');
-        const loginForm = document.getElementById('login-form');
         const errorMsg = document.getElementById('error-msg');
-        const btnLogin = document.getElementById('btn-login');
         const btnGoogle = document.getElementById('btn-google-login');
 
-        // Impede que a tela de login apareça caso o utilizador já esteja autenticado
+        // Redireciona direto se já estiver autenticado sem piscar a tela
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 window.location.href = 'index.html';
@@ -228,34 +151,7 @@
             }
         });
 
-        // Login Tradicional (E-mail e Senha)
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value.trim();
-            const password = document.getElementById('password').value;
-
-            errorMsg.textContent = "";
-            btnLogin.disabled = true;
-            btnLogin.textContent = "A entrar...";
-
-            try {
-                await signInWithEmailAndPassword(auth, email, password);
-                window.location.href = 'index.html';
-            } catch (error) {
-                console.error("Erro no login:", error);
-                let msg = "Erro ao entrar. Verifique o e-mail e a palavra-passe.";
-                if (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password' || error.code === 'auth/user-not-found') {
-                    msg = "E-mail ou palavra-passe incorretos.";
-                } else if (error.code === 'auth/too-many-requests') {
-                    msg = "Muitas tentativas falhadas. Tente novamente mais tarde.";
-                }
-                errorMsg.textContent = msg;
-                btnLogin.disabled = false;
-                btnLogin.textContent = "Entrar";
-            }
-        });
-
-        // Login com Google (Apenas Contas Pré-Cadastradas no Firestore)
+        // Login com Google (Apenas Contas Autorizadas em "allowed_users")
         btnGoogle.addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
             errorMsg.textContent = "";
@@ -264,7 +160,7 @@
                 const result = await signInWithPopup(auth, provider);
                 const user = result.user;
 
-                // Verifica se a conta possui registo prévio na coleção "allowed_users"
+                // Valida na coleção "allowed_users"
                 const userDocRef = doc(db, "allowed_users", user.email.toLowerCase());
                 const userSnap = await getDoc(userDocRef);
 
