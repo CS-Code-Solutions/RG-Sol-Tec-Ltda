@@ -332,7 +332,30 @@
             window.location.href = 'login.html';
         });
 
-        const clientPad = new SignaturePad(document.getElementById('client-pad'));
+        // INICIALIZAÇÃO DA ASSINATURA DO CLIENTE COM AJUSTE DE PROPORÇÃO
+        const clientCanvas = document.getElementById('client-pad');
+        const clientPad = new SignaturePad(clientCanvas, {
+            minWidth: 1,
+            maxWidth: 2.5,
+            penColor: "rgb(0, 0, 0)"
+        });
+
+        function resizeClientCanvas() {
+            if (!clientCanvas) return;
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            const data = clientPad.toData();
+
+            clientCanvas.width = clientCanvas.offsetWidth * ratio;
+            clientCanvas.height = clientCanvas.offsetHeight * ratio;
+            clientCanvas.getContext("2d").scale(ratio, ratio);
+
+            clientPad.clear();
+            clientPad.fromData(data);
+        }
+
+        window.addEventListener("resize", resizeClientCanvas);
+        setTimeout(resizeClientCanvas, 200);
+
         document.getElementById('clear-client').addEventListener('click', () => clientPad.clear());
 
         async function carregarClientes() {
