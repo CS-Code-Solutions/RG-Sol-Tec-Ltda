@@ -230,6 +230,24 @@
 
             <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
 
+            <!-- ASSINATURA FIXA DO TÉCNICO RESPONSÁVEL -->
+            <div style="margin-bottom: 15px;">
+                <h4 style="margin: 0 0 8px 0; color: #2c3e50; font-size: 15px;">✍️ Assinatura do Técnico Responsável</h4>
+                <p style="font-size: 11px; color: #666; margin-bottom: 8px;">Guarde a assinatura para sair automaticamente em todos os relatórios PDF.</p>
+                <div style="border: 1px dashed #007bff; border-radius: 6px; background: #fafafa; text-align: center; padding: 5px;">
+                    <canvas id="canvasTecnicoConfig" width="320" height="110" style="border: 1px solid #ccc; background: #fff; cursor: crosshair; touch-action: none; border-radius: 4px; max-width: 100%;"></canvas>
+                </div>
+                <div style="display: flex; gap: 8px; margin-top: 8px;">
+                    <button type="button" id="btnLimparAssinaturaTec" style="flex: 1; padding: 6px; background: #6c757d; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">Limpar</button>
+                    <button type="button" id="btnSalvarAssinaturaTec" style="flex: 1; padding: 6px; background: #28a745; color: white; border: none; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">Salvar Assinatura</button>
+                </div>
+                <div id="previewAssinaturaTec" style="margin-top: 8px; font-size: 12px; color: #1e8e3e; font-weight: bold; text-align: center; display: none;">
+                    ✓ Assinatura do técnico salva com sucesso!
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+
             <!-- GESTÃO DE BACKUP -->
             <div>
                 <h4 style="margin: 0 0 5px 0; color: #2c3e50; font-size: 15px;">💾 Cópia de Segurança (Backup)</h4>
@@ -281,7 +299,7 @@
         }
     </script>
 
-    <!-- SCRIPT DE LÓGICA DO MODAL DE CONFIGURAÇÕES & BACKUP -->
+    <!-- SCRIPT DE LÓGICA DO MODAL DE CONFIGURAÇÕES & BACKUP & CANVAS TÉCNICO -->
     <script type="module">
         import { db } from './js/firebase-config.js?v=3.9';
         import { collection, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -294,6 +312,7 @@
 
         function abrirModalConfiguracoes() {
             carregarDadosEmpresaLocal();
+            carregarAssinaturaTecnicoSalva();
             modalConfig.style.display = 'flex';
         }
 
@@ -362,6 +381,82 @@
             localStorage.setItem('rg_dados_empresa', JSON.stringify(dados));
             alert('Dados da empresa salvos com sucesso!');
         });
+
+        // --- CANVAS ASSINATURA TÉCNICO RESPONSÁVEL ---
+        const canvasTec = document.getElementById('canvasTecnicoConfig');
+        let ctxTec = canvasTec ? canvasTec.getContext('2d') : null;
+        let desenhandoTec = false;
+
+        function getPosTec(e) {
+            const rect = canvasTec.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function iniciarDesenhoTec(e) {
+            desenhandoTec = true;
+            const pos = getPosTec(e);
+            ctxTec.beginPath();
+            ctxTec.moveTo(pos.x, pos.y);
+        }
+
+        function desenharTec(e) {
+            if (!desenhandoTec) return;
+            e.preventDefault();
+            const pos = getPosTec(e);
+            ctxTec.lineWidth = 2;
+            ctxTec.lineCap = 'round';
+            ctxTec.strokeStyle = '#000';
+            ctxTec.lineTo(pos.x, pos.y);
+            ctxTec.stroke();
+        }
+
+        function pararDesenhoTec() {
+            desenhandoTec = false;
+        }
+
+        if (canvasTec) {
+            canvasTec.addEventListener('mousedown', iniciarDesenhoTec);
+            canvasTec.addEventListener('mousemove', desenharTec);
+            canvasTec.addEventListener('mouseup', pararDesenhoTec);
+            canvasTec.addEventListener('mouseleave', pararDesenhoTec);
+
+            canvasTec.addEventListener('touchstart', iniciarDesenhoTec, { passive: false });
+            canvasTec.addEventListener('touchmove', desenharTec, { passive: false });
+            canvasTec.addEventListener('touchend', pararDesenhoTec);
+        }
+
+        document.getElementById('btnLimparAssinaturaTec')?.addEventListener('click', () => {
+            if (ctxTec) ctxTec.clearRect(0, 0, canvasTec.width, canvasTec.height);
+            localStorage.removeItem('rg_assinatura_tecnico');
+            document.getElementById('previewAssinaturaTec').style.display = 'none';
+        });
+
+        document.getElementById('btnSalvarAssinaturaTec')?.addEventListener('click', () => {
+            if (!canvasTec) return;
+            const dataUrl = canvasTec.toDataURL('image/png');
+            localStorage.setItem('rg_assinatura_tecnico', dataUrl);
+            const preview = document.getElementById('previewAssinaturaTec');
+            preview.style.display = 'block';
+            setTimeout(() => { preview.style.display = 'none'; }, 3000);
+        });
+
+        function carregarAssinaturaTecnicoSalva() {
+            if (!ctxTec) return;
+            const salva = localStorage.getItem('rg_assinatura_tecnico');
+            if (salva) {
+                const img = new Image();
+                img.onload = () => {
+                    ctxTec.clearRect(0, 0, canvasTec.width, canvasTec.height);
+                    ctxTec.drawImage(img, 0, 0);
+                };
+                img.src = salva;
+            }
+        }
 
         // --- Exportar Backup JSON ---
         document.getElementById('btnExportarBackup')?.addEventListener('click', async () => {
@@ -1057,8 +1152,12 @@
                 docPDF.text("ASSINATURA DO CLIENTE", 38, sigY + 13.5);
                 docPDF.text("ASSINATURA TÉCNICO RESPONSÁVEL", 128, sigY + 13.5);
 
-                if (order.technicianSignature) {
-                    docPDF.addImage(order.technicianSignature, 'PNG', 125, sigY - 4, 45, 12);
+                // RECUPERA A ASSINATURA DA RAT OU A FIXA GUARDADA NAS CONFIGURAÇÕES
+                const assinaturaSalvaTecnico = localStorage.getItem('rg_assinatura_tecnico');
+                const techSigPDF = order.technicianSignature || assinaturaSalvaTecnico;
+
+                if (techSigPDF) {
+                    docPDF.addImage(techSigPDF, 'PNG', 125, sigY - 4, 45, 12);
                 }
 
                 if (order.customerSignature) {
