@@ -242,13 +242,7 @@
                         <input type="text" id="payment-terms" placeholder="Ex: 30" required style="width: 100%; padding: 8px; box-sizing: border-box;">
                     </div>
 
-                    <!-- Assinaturas -->
-                    <div style="margin-top: 20px;">
-                        <h4 style="margin-bottom: 5px;">Assinatura do Técnico Responsável</h4>
-                        <canvas id="tech-pad" style="border: 1px solid #ccc; width: 100%; height: 150px; background: #fff; touch-action: none; border-radius: 4px;"></canvas>
-                        <button type="button" id="clear-tech" style="margin-top: 5px; padding: 5px 10px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">Limpar Assinatura</button>
-                    </div>
-
+                    <!-- Assinatura do Cliente -->
                     <div style="margin-top: 20px;">
                         <h4 style="margin-bottom: 5px;">Assinatura do Cliente</h4>
                         <canvas id="client-pad" style="border: 1px solid #ccc; width: 100%; height: 150px; background: #fff; touch-action: none; border-radius: 4px;"></canvas>
@@ -338,10 +332,7 @@
             window.location.href = 'login.html';
         });
 
-        const techPad = new SignaturePad(document.getElementById('tech-pad'));
         const clientPad = new SignaturePad(document.getElementById('client-pad'));
-
-        document.getElementById('clear-tech').addEventListener('click', () => techPad.clear());
         document.getElementById('clear-client').addEventListener('click', () => clientPad.clear());
 
         async function carregarClientes() {
@@ -402,14 +393,14 @@
             const valorLitro = parseFloat(document.getElementById('valor-litro').value) || 0;
             const combustivelLitros = parseFloat(document.getElementById('combustivel-litros').value) || 0;
 
-            // Novas despesas extras
             const temDespesas = document.getElementById('tem-despesas').value;
             const valorPedagio = parseFloat(document.getElementById('valor-pedagio').value) || 0;
             const valorAlimentacao = parseFloat(document.getElementById('valor-alimentacao').value) || 0;
             const valorHospedagem = parseFloat(document.getElementById('valor-hospedagem').value) || 0;
             const valorDespesasTotal = temDespesas === 'sim' ? (valorPedagio + valorAlimentacao + valorHospedagem) : 0;
 
-            const technicianSignature = !techPad.isEmpty() ? techPad.toDataURL() : null;
+            // Pega a assinatura salva do técnico nas Configurações como padrão
+            const technicianSignature = localStorage.getItem('rg_assinatura_tecnico') || null;
             const customerSignature = !clientPad.isEmpty() ? clientPad.toDataURL() : null;
 
             const anexoRows = document.querySelectorAll('.anexo-row');
