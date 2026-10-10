@@ -10,96 +10,147 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f7f6;
             margin: 0;
             padding: 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
+            min-height: 100vh;
             box-sizing: border-box;
+            /* Imagem de Fundo com Escurecimento para Destaque */
+            background: linear-gradient(rgba(10, 20, 35, 0.75), rgba(10, 20, 35, 0.75)), 
+                        url('img/image.png') no-repeat center center fixed;
+            background-size: cover;
         }
-        /* Contorno e Destaque no Painel de Login */
+
+        /* Cartão de Login Escuro e Translúcido */
         .login-card {
-            background: white;
-            padding: 30px;
-            border-radius: 12px;
-            border: 2px solid #007bff;
-            box-shadow: 0 8px 20px rgba(0, 123, 255, 0.15);
+            background: rgba(18, 26, 38, 0.92);
+            backdrop-filter: blur(8px);
+            padding: 35px 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 195, 255, 0.4);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 123, 255, 0.2);
             width: 100%;
             max-width: 380px;
             text-align: center;
             box-sizing: border-box;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            /* Oculto por padrão até validar o estado da sessão */
+            display: none; 
         }
         .login-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 123, 255, 0.22);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.7), 0 0 20px rgba(0, 195, 255, 0.35);
         }
         .login-card img {
-            max-width: 150px;
+            max-width: 160px;
             height: auto;
             margin-bottom: 15px;
+            filter: drop-shadow(0px 2px 6px rgba(0,0,0,0.5));
         }
-        h2 { color: #333; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; text-align: left; }
-        label { display: block; margin-bottom: 5px; color: #555; }
+        h2 { 
+            color: #ffffff; 
+            margin-bottom: 22px; 
+            font-size: 22px;
+            font-weight: 600;
+        }
+        .form-group { 
+            margin-bottom: 16px; 
+            text-align: left; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 6px; 
+            color: #d1d5db; 
+            font-size: 13px;
+            font-weight: bold;
+        }
         input { 
             width: 100%; 
-            padding: 10px; 
-            border: 1px solid #ccc; 
-            border-radius: 4px; 
+            padding: 11px; 
+            border: 1px solid #374151; 
+            background-color: #1f2937;
+            color: #ffffff;
+            border-radius: 6px; 
             box-sizing: border-box; 
             outline: none;
+            font-size: 14px;
             transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        input::placeholder {
+            color: #9ca3af;
         }
         input:focus {
             border-color: #007bff;
-            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2);
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
         }
-        button { width: 100%; background: #007BFF; color: white; border: none; padding: 10px; border-radius: 4px; font-size: 16px; cursor: pointer; }
-        button:hover { background: #0056b3; }
-        #error-msg { color: red; margin-top: 10px; font-size: 14px; }
+        button[type="submit"] { 
+            width: 100%; 
+            background: linear-gradient(135deg, #007bff, #0056b3); 
+            color: white; 
+            border: none; 
+            padding: 11px; 
+            border-radius: 6px; 
+            font-size: 15px; 
+            font-weight: bold;
+            cursor: pointer; 
+            transition: opacity 0.2s;
+            margin-top: 5px;
+        }
+        button[type="submit"]:hover { 
+            opacity: 0.9;
+        }
+        #error-msg { 
+            color: #ff6b6b; 
+            margin-top: 12px; 
+            font-size: 13px; 
+            line-height: 1.4;
+        }
 
-        /* Estilos do Divisor e Botão Google */
+        /* Divisor */
         .divider {
             display: flex;
             align-items: center;
             text-align: center;
-            margin: 18px 0;
-            color: #888;
+            margin: 20px 0;
+            color: #9ca3af;
             font-size: 12px;
         }
         .divider::before, .divider::after {
             content: '';
             flex: 1;
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid #374151;
         }
         .divider span {
             padding: 0 10px;
         }
+
+        /* Botão Google */
         .btn-google {
             background: #ffffff;
-            color: #555;
-            border: 1px solid #dadce0;
-            border-radius: 4px;
+            color: #374151;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
             font-size: 14px;
             font-weight: bold;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
-            padding: 9px;
+            width: 100%;
+            padding: 10px;
+            cursor: pointer;
             transition: background 0.2s, border-color 0.2s;
         }
         .btn-google:hover {
-            background: #f8f9fa;
-            border-color: #c1c3c7;
+            background: #f3f4f6;
+            border-color: #9ca3af;
         }
     </style>
 </head>
 <body>
-    <div class="login-card">
+    <div class="login-card" id="loginCard">
         <!-- Logótipo -->
         <img src="img/logo.png" alt="RG Soluções Técnicas">
         
@@ -134,7 +185,7 @@
         <div id="error-msg"></div>
 
         <!-- Assinatura -->
-        <div style="margin-top: 25px; font-size: 11px; color: #adb5bd; font-weight: 500;">
+        <div style="margin-top: 25px; font-size: 11px; color: #9ca3af; font-weight: 500;">
             Powered by CS Code Solutions
         </div>
     </div>
@@ -157,14 +208,25 @@
             signInWithEmailAndPassword, 
             GoogleAuthProvider, 
             signInWithPopup, 
-            signOut 
+            signOut,
+            onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
+        const loginCard = document.getElementById('loginCard');
         const loginForm = document.getElementById('login-form');
         const errorMsg = document.getElementById('error-msg');
         const btnLogin = document.getElementById('btn-login');
         const btnGoogle = document.getElementById('btn-google-login');
+
+        // Impede que a tela de login apareça caso o utilizador já esteja autenticado
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                window.location.href = 'index.html';
+            } else {
+                loginCard.style.display = 'block';
+            }
+        });
 
         // Login Tradicional (E-mail e Senha)
         loginForm.addEventListener('submit', async (e) => {
