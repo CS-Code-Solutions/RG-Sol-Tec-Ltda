@@ -235,7 +235,7 @@
                 <h4 style="margin: 0 0 8px 0; color: #2c3e50; font-size: 15px;">✍️ Assinatura do Técnico Responsável</h4>
                 <p style="font-size: 11px; color: #666; margin-bottom: 8px;">Guarde a assinatura para sair automaticamente em todos os relatórios PDF.</p>
                 <div style="border: 1px dashed #007bff; border-radius: 6px; background: #fafafa; text-align: center; padding: 5px;">
-                    <canvas id="canvasTecnicoConfig" width="320" height="110" style="border: 1px solid #ccc; background: #fff; cursor: crosshair; touch-action: none; border-radius: 4px; max-width: 100%;"></canvas>
+                    <canvas id="canvasTecnicoConfig" style="border: 1px solid #ccc; background: #fff; cursor: crosshair; touch-action: none; border-radius: 4px; width: 100%; height: 120px;"></canvas>
                 </div>
                 <div style="display: flex; gap: 8px; margin-top: 8px;">
                     <button type="button" id="btnLimparAssinaturaTec" style="flex: 1; padding: 6px; background: #6c757d; color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">Limpar</button>
@@ -312,8 +312,11 @@
 
         function abrirModalConfiguracoes() {
             carregarDadosEmpresaLocal();
-            carregarAssinaturaTecnicoSalva();
             modalConfig.style.display = 'flex';
+            setTimeout(() => {
+                reajustarCanvasTecnico();
+                carregarAssinaturaTecnicoSalva();
+            }, 100);
         }
 
         function fecharModalConfiguracoes() {
@@ -382,10 +385,29 @@
             alert('Dados da empresa salvos com sucesso!');
         });
 
-        // --- CANVAS ASSINATURA TÉCNICO RESPONSÁVEL ---
+        // --- CANVAS ASSINATURA TÉCNICO RESPONSÁVEL COM AJUSTE PRECISO ---
         const canvasTec = document.getElementById('canvasTecnicoConfig');
         let ctxTec = canvasTec ? canvasTec.getContext('2d') : null;
         let desenhandoTec = false;
+
+        function reajustarCanvasTecnico() {
+            if (!canvasTec || canvasTec.offsetWidth === 0) return;
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = canvasTec.width;
+            tempCanvas.height = canvasTec.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(canvasTec, 0, 0);
+
+            canvasTec.width = canvasTec.offsetWidth * ratio;
+            canvasTec.height = canvasTec.offsetHeight * ratio;
+            ctxTec.scale(ratio, ratio);
+
+            ctxTec.drawImage(tempCanvas, 0, 0, tempCanvas.width / ratio, tempCanvas.height / ratio, 0, 0, canvasTec.offsetWidth, canvasTec.offsetHeight);
+        }
+
+        window.addEventListener('resize', reajustarCanvasTecnico);
 
         function getPosTec(e) {
             const rect = canvasTec.getBoundingClientRect();
@@ -452,7 +474,7 @@
                 const img = new Image();
                 img.onload = () => {
                     ctxTec.clearRect(0, 0, canvasTec.width, canvasTec.height);
-                    ctxTec.drawImage(img, 0, 0);
+                    ctxTec.drawImage(img, 0, 0, canvasTec.offsetWidth, canvasTec.offsetHeight);
                 };
                 img.src = salva;
             }
