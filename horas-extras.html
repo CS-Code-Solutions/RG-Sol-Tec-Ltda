@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registo de Horas Extras - RG Soluções Técnicas</title>
-    <link rel="stylesheet" href="css/style.css?v=1.11">
+    <link rel="stylesheet" href="css/style.css?v=3.9">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#007bff">
     <!-- Biblioteca SheetJS para exportar ficheiros Excel (.xlsx) -->
@@ -21,8 +21,8 @@
             <nav>
                 <a href="index.html">🏠 Início / Histórico</a>
                 <a href="clientes.html">👥 Gestão de Clientes</a>
-                <a href="nova-os.html">📋 Nova Ordem de Serviço</a>
-                <a href="horas-extras.html" class="active">⏱ Horas Extras</a>
+                <a href="nova-os.html">📋 Nova RAT</a>
+                <a href="horas-extras.html" class="active">⏱️ Horas Extras</a>
                 <a href="index.html?config=true" style="background: #2c3e50; text-align: center; margin-top: 15px;">⚙️ Configurações</a>
                 <a href="#" id="btn-logout" style="margin-top: 30px; background: #dc3545; text-align: center;">🚪 Terminar Sessão</a>
                 
@@ -56,7 +56,7 @@
                     </div>
                 </div>
 
-                <!-- Formulário de Registo / Edição Manual -->
+                <!-- Formulário de Registo / Edição de Horas Extras -->
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px; border: 1px solid #ddd;">
                     <h3 id="form-title" style="margin-top: 0; color: #2c3e50; font-size: 16px;">Adicionar Registo Manual</h3>
                     
@@ -72,14 +72,30 @@
                             </div>
                         </div>
 
-                        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px;">
-                            <div style="flex: 1; min-width: 180px;">
-                                <label style="display: block; font-weight: bold; margin-bottom: 4px; font-size: 13px;">Hora Início:</label>
-                                <input type="datetime-local" id="he-start" required style="width: 100%; padding: 8px; box-sizing: border-box;">
+                        <!-- Turnos no estilo Nova RAT -->
+                        <div style="background: #fff; padding: 12px; border-radius: 6px; border: 1px solid #ccc; margin-bottom: 15px;">
+                            <p style="font-size: 12px; color: #666; margin-top: 0; margin-bottom: 10px;">Preencha o(s) turno(s) do dia (Manhã e/ou Tarde):</p>
+                            
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
+                                <div style="flex: 1; min-width: 180px;">
+                                    <label style="display: block; font-weight: bold; margin-bottom: 3px; font-size: 12px;">Início Manhã:</label>
+                                    <input type="datetime-local" id="he-start-manha" style="width: 100%; padding: 6px; box-sizing: border-box;">
+                                </div>
+                                <div style="flex: 1; min-width: 180px;">
+                                    <label style="display: block; font-weight: bold; margin-bottom: 3px; font-size: 12px;">Final Manhã:</label>
+                                    <input type="datetime-local" id="he-end-manha" style="width: 100%; padding: 6px; box-sizing: border-box;">
+                                </div>
                             </div>
-                            <div style="flex: 1; min-width: 180px;">
-                                <label style="display: block; font-weight: bold; margin-bottom: 4px; font-size: 13px;">Hora Fim:</label>
-                                <input type="datetime-local" id="he-end" required style="width: 100%; padding: 8px; box-sizing: border-box;">
+
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 180px;">
+                                    <label style="display: block; font-weight: bold; margin-bottom: 3px; font-size: 12px;">Início Tarde:</label>
+                                    <input type="datetime-local" id="he-start-tarde" style="width: 100%; padding: 6px; box-sizing: border-box;">
+                                </div>
+                                <div style="flex: 1; min-width: 180px;">
+                                    <label style="display: block; font-weight: bold; margin-bottom: 3px; font-size: 12px;">Final Tarde (Encerramento):</label>
+                                    <input type="datetime-local" id="he-end-tarde" style="width: 100%; padding: 6px; box-sizing: border-box;">
+                                </div>
                             </div>
                         </div>
 
@@ -108,7 +124,7 @@
 
     <!-- Script Principal -->
     <script type="module">
-        import { db, auth } from './js/firebase-config.js?v=1.11';
+        import { db, auth } from './js/firebase-config.js?v=3.9';
         import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
         import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
@@ -164,7 +180,6 @@
         const btnSubmitHE = document.getElementById('btn-submit-he');
         const btnCancelEdit = document.getElementById('btn-cancel-edit');
 
-        // Função para formatar a data yyyy-mm-dd para dd/mm/aaaa
         function formatDateBR(dateStr) {
             if (!dateStr) return 'N/A';
             const parts = dateStr.split('-');
@@ -174,13 +189,40 @@
             return dateStr;
         }
 
-        // Função para formatar data/hora para dd/mm/aaaa HH:MM
         function formatDateTimeBR(isoString) {
             if (!isoString) return 'N/A';
             const [datePart, timePart] = isoString.split('T');
             if (!datePart || !timePart) return isoString;
             const [ano, mes, dia] = datePart.split('-');
             return `${dia}/${mes}/${ano} ${timePart}`;
+        }
+
+        function calcularMinutosHE(startM, endM, startT, endT, valorHora = 38.63) {
+            let minutosTotais = 0;
+
+            if (startM && endM) {
+                const diffM = new Date(endM) - new Date(startM);
+                if (diffM > 0) minutosTotais += diffM / (1000 * 60);
+            }
+
+            if (startT && endT) {
+                const diffT = new Date(endT) - new Date(startT);
+                if (diffT > 0) minutosTotais += diffT / (1000 * 60);
+            }
+
+            if (minutosTotais < 0) minutosTotais = 0;
+
+            const horasDecimais = minutosTotais / 60;
+            const valorTotal = horasDecimais * Number(valorHora);
+
+            const horasExatas = Math.floor(minutosTotais / 60);
+            const minutosRestantes = Math.round(minutosTotais % 60);
+
+            return {
+                horasDecimais: horasDecimais.toFixed(2),
+                totalHoursText: `${horasExatas}h ${minutosRestantes}m`,
+                valorTotal: valorTotal.toFixed(2)
+            };
         }
 
         async function loadHorasExtras() {
@@ -204,8 +246,22 @@
                 let html = "";
                 allHE.forEach((item) => {
                     const dataFormatada = formatDateBR(item.date);
-                    const inicioFormatado = formatDateTimeBR(item.start);
-                    const fimFormatado = formatDateTimeBR(item.end);
+                    
+                    const inicioM = item.timeStartManha || item.start;
+                    const fimM = item.timeEndManha;
+                    const inicioT = item.timeStartTarde;
+                    const fimT = item.timeEndTarde || (item.end !== item.start ? item.end : null);
+
+                    let turnosHtml = '';
+                    if (inicioM && fimM) {
+                        turnosHtml += `<p style="margin: 3px 0; font-size: 13px; color: #555;"><strong>Manhã:</strong> ${formatDateTimeBR(inicioM)} às ${formatDateTimeBR(fimM)}</p>`;
+                    }
+                    if (inicioT && fimT) {
+                        turnosHtml += `<p style="margin: 3px 0; font-size: 13px; color: #555;"><strong>Tarde:</strong> ${formatDateTimeBR(inicioT)} às ${formatDateTimeBR(fimT)}</p>`;
+                    }
+                    if (!turnosHtml && inicioM) {
+                        turnosHtml = `<p style="margin: 3px 0; font-size: 13px; color: #555;"><strong>Período:</strong> ${formatDateTimeBR(inicioM)} ${item.end ? 'às ' + formatDateTimeBR(item.end) : ''}</p>`;
+                    }
 
                     html += `
                         <div style="background: white; border: 1px solid #ddd; border-left: 5px solid #17a2b8; padding: 12px 15px; border-radius: 6px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
@@ -213,9 +269,8 @@
                                 <strong style="font-size: 14px; color: #2c3e50;">Data: ${dataFormatada} (R$ ${item.valorHora || 38.63}/h)</strong>
                                 <span style="background: #28a745; color: white; padding: 2px 6px; border-radius: 4px; font-size: 12px; font-weight: bold;">R$ ${item.totalValue || '0.00'}</span>
                             </div>
-                            <p style="margin: 4px 0; font-size: 13px; color: #555;"><strong>Início:</strong> ${inicioFormatado}</p>
-                            <p style="margin: 4px 0; font-size: 13px; color: #555;"><strong>Fim:</strong> ${fimFormatado}</p>
-                            <p style="margin: 4px 0; font-size: 13px; color: #555;"><strong>Duração:</strong> ${item.totalHoursText || '0h'} (${item.totalHours || 0}h)</p>
+                            ${turnosHtml}
+                            <p style="margin: 4px 0; font-size: 13px; color: #555;"><strong>Duração Total:</strong> ${item.totalHoursText || '0h'} (${item.totalHours || 0}h)</p>
                             <p style="margin: 4px 0; font-size: 13px; color: #666;"><strong>Motivo:</strong> ${item.reason || 'Sem motivo'}</p>
                             <div style="margin-top: 8px; display: flex; gap: 8px; justify-content: flex-end;">
                                 <button type="button" onclick="prepararEdicaoHE('${item.id}')" style="background: #ffc107; color: #333; border: none; padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: bold;">✏️ Editar</button>
@@ -231,7 +286,6 @@
             }
         }
 
-        // Função para preparar o formulário para edição
         window.prepararEdicaoHE = function(id) {
             const item = allHE.find(h => h.id === id);
             if (!item) return;
@@ -239,8 +293,12 @@
             editingHEId = id;
             document.getElementById('he-date').value = item.date || '';
             document.getElementById('he-valor-hora').value = item.valorHora || 38.63;
-            document.getElementById('he-start').value = item.start || '';
-            document.getElementById('he-end').value = item.end || '';
+            
+            document.getElementById('he-start-manha').value = item.timeStartManha || item.start || '';
+            document.getElementById('he-end-manha').value = item.timeEndManha || '';
+            document.getElementById('he-start-tarde').value = item.timeStartTarde || '';
+            document.getElementById('he-end-tarde').value = item.timeEndTarde || (item.end !== item.start ? item.end : '');
+            
             document.getElementById('he-reason').value = item.reason || '';
 
             formTitle.textContent = "Editar Registo de Hora Extra";
@@ -268,7 +326,7 @@
             btnCancelEdit.style.display = "none";
         }
 
-        // Gerar Relatório Excel Estruturado (.xlsx) - Ordenado do Dia 1 ao Fim do Mês
+        // Exportar Relatório Excel
         document.getElementById('btn-gerar-excel').addEventListener('click', () => {
             const mesAnoValor = document.getElementById('rel-mes-ano').value;
             if (!mesAnoValor) {
@@ -287,26 +345,28 @@
                 return;
             }
 
-            // Ordenar por ordem cronológica crescente (do dia 1 para a frente)
             itensDoMes.sort((a, b) => new Date(a.date) - new Date(b.date));
 
             let dadosExcel = [];
             let somaValorTotal = 0;
 
             itensDoMes.forEach(item => {
-                let periodoStr = "N/A";
-                if (item.start && item.end) {
-                    const hInicio = formatDateTimeBR(item.start);
-                    const hFim = formatDateTimeBR(item.end);
-                    periodoStr = `${hInicio} às ${hFim}`;
-                }
+                let periodoStr = "";
+                const inicioM = item.timeStartManha || item.start;
+                const fimM = item.timeEndManha;
+                const inicioT = item.timeStartTarde;
+                const fimT = item.timeEndTarde || item.end;
+
+                if (inicioM && fimM) periodoStr += `Manhã: ${formatDateTimeBR(inicioM)} às ${formatDateTimeBR(fimM)} `;
+                if (inicioT && fimT) periodoStr += `Tarde: ${formatDateTimeBR(inicioT)} às ${formatDateTimeBR(fimT)}`;
+                if (!periodoStr && inicioM) periodoStr = `${formatDateTimeBR(inicioM)} às ${formatDateTimeBR(fimT || inicioM)}`;
 
                 const valorNum = parseFloat(item.totalValue) || 0;
                 somaValorTotal += valorNum;
 
                 dadosExcel.push({
                     "Dia / Data": formatDateBR(item.date),
-                    "Período / Horário": periodoStr,
+                    "Período / Horário": periodoStr.trim(),
                     "Descrição / Motivo": item.reason || '',
                     "Carga Horária": item.totalHoursText || `${item.totalHours}h`,
                     "Valor Total (R$)": valorNum
@@ -326,7 +386,7 @@
             XLSX.utils.book_append_sheet(workbook, worksheet, "Horas Extras");
 
             const wscols = [
-                {wch: 15}, {wch: 32}, {wch: 35}, {wch: 15}, {wch: 18}
+                {wch: 15}, {wch: 45}, {wch: 35}, {wch: 15}, {wch: 18}
             ];
             worksheet['!cols'] = wscols;
 
@@ -344,51 +404,51 @@
             }
         };
 
-        // Submeter formulário (Adicionar ou Atualizar)
+        // Submeter formulário
         heForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const date = document.getElementById('he-date').value;
             const valorHora = parseFloat(document.getElementById('he-valor-hora').value) || 38.63;
-            const start = document.getElementById('he-start').value;
-            const end = document.getElementById('he-end').value;
+            
+            const timeStartManha = document.getElementById('he-start-manha').value;
+            const timeEndManha = document.getElementById('he-end-manha').value;
+            const timeStartTarde = document.getElementById('he-start-tarde').value;
+            const timeEndTarde = document.getElementById('he-end-tarde').value;
+            
             const reason = document.getElementById('he-reason').value;
 
-            const diffMs = new Date(end) - new Date(start);
-            if (diffMs <= 0) { alert("A hora de fim deve ser posterior à de início!"); return; }
+            if (!timeStartManha && !timeStartTarde) {
+                alert("Por favor, preencha pelo menos um horário de início (Manhã ou Tarde)!");
+                return;
+            }
 
-            const minutosTotais = diffMs / (1000 * 60);
-            const horasDecimais = minutosTotais / 60;
-            const valorTotal = (horasDecimais * valorHora).toFixed(2);
-            const horasExatas = Math.floor(minutosTotais / 60);
-            const minutosRestantes = Math.round(minutosTotais % 60);
-            const totalHoursText = `${horasExatas}h ${minutosRestantes}m`;
+            const calc = calcularMinutosHE(timeStartManha, timeEndManha, timeStartTarde, timeEndTarde, valorHora);
+            const startOficial = timeStartManha || timeStartTarde;
+            const endOficial = timeEndTarde || timeEndManha || startOficial;
+
+            const payload = {
+                date,
+                valorHora,
+                timeStartManha,
+                timeEndManha,
+                timeStartTarde,
+                timeEndTarde,
+                start: startOficial,
+                end: endOficial,
+                reason,
+                totalHours: calc.horasDecimais,
+                totalHoursText: calc.totalHoursText,
+                totalValue: calc.valorTotal
+            };
 
             try {
                 if (editingHEId) {
-                    // Atualizar registo existente na nuvem
                     const heRef = doc(db, "horas_extras", editingHEId);
-                    await updateDoc(heRef, {
-                        date,
-                        valorHora,
-                        start,
-                        end,
-                        reason,
-                        totalHours: horasDecimais.toFixed(2),
-                        totalHoursText,
-                        totalValue: valorTotal
-                    });
+                    await updateDoc(heRef, payload);
                     alert("Registo atualizado com sucesso na nuvem!");
                 } else {
-                    // Criar novo registo na nuvem
                     await addDoc(collection(db, "horas_extras"), {
-                        date,
-                        valorHora,
-                        start,
-                        end,
-                        reason,
-                        totalHours: horasDecimais.toFixed(2),
-                        totalHoursText,
-                        totalValue: valorTotal,
+                        ...payload,
                         createdAt: new Date()
                     });
                     alert("Registo sincronizado com sucesso na nuvem!");
