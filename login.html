@@ -17,8 +17,7 @@
             align-items: center;
             min-height: 100vh;
             box-sizing: border-box;
-            background-color: #0a1423; /* Fundo base escuro fixo */
-            /* Apenas a sua imagem local img/image.png */
+            background-color: #0a1423;
             background: linear-gradient(rgba(10, 20, 35, 0.75), rgba(10, 20, 35, 0.75)), 
                         url('image.png') no-repeat center center fixed;
             background-size: cover;
@@ -37,7 +36,7 @@
             text-align: center;
             box-sizing: border-box;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
-            display: none; /* Oculto até checar se o utilizador já está logado */
+            display: none;
         }
         .login-card:hover {
             transform: translateY(-2px);
@@ -127,7 +126,7 @@
         }
     </script>
 
-    <!-- Script de Autenticação Exclusiva com Google -->
+    <!-- Script de Autenticação com Validação Estrita -->
     <script type="module">
         import { auth, db } from './js/firebase-config.js?v=3.9';
         import { 
@@ -136,45 +135,75 @@
             signOut,
             onAuthStateChanged
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { doc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const loginCard = document.getElementById('loginCard');
         const errorMsg = document.getElementById('error-msg');
         const btnGoogle = document.getElementById('btn-google-login');
 
-        // Redireciona direto se já estiver autenticado sem exibir a tela
-        onAuthStateChanged(auth, (user) => {
+        // Função para validar se o e-mail está autorizado no Firestore
+        async function validarUsuarioAutorizado(email) {
+            if (!email) return false;
+            const emailLower = email.toLowerCase().trim();
+
+            try {
+                // 1. Tenta buscar direto por ID de documento no "allowed_users"
+                const docRef = doc(db, "allowed_users", emailLower);
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) return true;
+
+                // 2. Tenta buscar por campo 'email' na coleção "allowed_users"
+                const qAllowed = query(collection(db, "allowed_users"), where("email", "==", emailLower));
+                const snapAllowed = await getDocs(qAllowed);
+                if (!snapAllowed.empty) return true;
+
+                // 3. Tenta buscar por campo 'email' na coleção "usuarios"
+                const qUsers = query(collection(db, "usuarios"), where("email", "==", emailLower));
+                const snapUsers = await getDocs(qUsers);
+                if (!snapUsers.empty) return true;
+
+                return false;
+            } catch (err) {
+                console.error("Erro na verificação de permissão:", err);
+                return false;
+            }
+        }
+
+        // Listener de sessão centralizado com validação no Firestore
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
-                window.location.href = 'index.html';
+                const autorizado = await validarUsuarioAutorizado(user.email);
+                
+                if (autorizado) {
+                    localStorage.setItem('rg_logged', 'true');
+                    window.location.href = 'index.html';
+                } else {
+                    // Se o e-mail não estiver na lista, força o encerramento da sessão
+                    await signOut(auth);
+                    localStorage.removeItem('rg_logged');
+                    errorMsg.textContent = `Acesso negado: O e-mail (${user.email}) não possui autorização no sistema.`;
+                    loginCard.style.display = 'block';
+                }
             } else {
+                localStorage.removeItem('rg_logged');
                 loginCard.style.display = 'block';
             }
         });
 
-        // Login com Google (Apenas Contas Autorizadas em "allowed_users")
+        // Clique para Login com Google
         btnGoogle.addEventListener('click', async () => {
             const provider = new GoogleAuthProvider();
-            errorMsg.textContent = "";
+            errorMsg.textContent = "A verificar autorização...";
 
             try {
-                const result = await signInWithPopup(auth, provider);
-                const user = result.user;
-
-                // Valida na coleção "allowed_users"
-                const userDocRef = doc(db, "allowed_users", user.email.toLowerCase());
-                const userSnap = await getDoc(userDocRef);
-
-                if (!userSnap.exists()) {
-                    await signOut(auth);
-                    errorMsg.textContent = `Acesso negado: O e-mail (${user.email}) não possui cadastro prévio no sistema.`;
-                    return;
-                }
-
-                window.location.href = 'index.html';
+                await signInWithPopup(auth, provider);
+                // O evento `onAuthStateChanged` assumirá o fluxo de verificação
             } catch (error) {
                 console.error("Erro no login com Google:", error);
                 if (error.code !== 'auth/popup-closed-by-user') {
                     errorMsg.textContent = "Falha ao autenticar via Google. Tente novamente.";
+                } else {
+                    errorMsg.textContent = "";
                 }
             }
         });
